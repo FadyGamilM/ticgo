@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment 
+metadata:
+  name: auth-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-service # match with the "template.metadata.labels.app" field
+  template:
+    metadata: 
+      labels:
+        app: auth-service # matches the selector of the depl
+    spec:
+      containers:
+        - name: auth-service
+          image: fadygamil/auth-service
+          env: 
+            - name: PORT
+              value: "8080"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-srv
+spec: 
+  selector:
+    app: auth-service # must match with the app from the depl 
+  ports:
+    - name: auth-service 
+      protocol: TCP 
+      port: 3030  # port other services communicates with auth-service inside the cluster on
+      targetPort: 8080 # port our auth-service is running and listening on inside the container 

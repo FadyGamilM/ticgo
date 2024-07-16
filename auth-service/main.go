@@ -45,10 +45,10 @@ func httpServer(ctx context.Context, wg *sync.WaitGroup) {
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = ":8080"
+		port = "8080"
 	}
 
-	srv := &http.Server{Addr: "0.0.0.0" + port, Handler: engine}
+	srv := &http.Server{Addr: "0.0.0.0:" + port, Handler: engine}
 
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {

@@ -23,6 +23,8 @@ RUN go build -o auth main.go
 
 RUN apk add --no-cache curl
 
-EXPOSE 8080
+ENV PORT=8080
+
+EXPOSE $PORT
 
 CMD ["./auth"]
