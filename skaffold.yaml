@@ -1,0 +1,24 @@
+apiVersion: skaffold/v2alpha3
+kind: Config
+
+deploy:
+  kubectl:
+    manifests:
+      - ./infra/k8s/*.yaml
+    flags:
+      global:
+        - "--context=minikube"  # Use Minikube context for local testing
+        
+build:
+  local:
+    push: false 
+  artifacts:
+    - image: fadygamil/auth-service
+      context: .
+      docker:
+        dockerfile: ./auth-service/Dockerfile
+      sync:
+        manual:
+          - src: './auth-service/**/*.go'
+            dest: . # sync the files into the container
+
