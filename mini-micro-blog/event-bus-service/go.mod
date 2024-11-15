@@ -1,4 +1,4 @@
-module comments-service
+module event-bus-service
 
 go 1.21.7
 
