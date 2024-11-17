@@ -1,6 +1,9 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -36,6 +39,8 @@ type Event struct {
 }
 
 func main() {
+	var event_bus_svc_port = os.Getenv("EVENT_BUS_SVC_PORT")
+
 	commentsDB := map[int][]Comment{}
 
 	commentIdCounter := 0
@@ -95,6 +100,22 @@ func main() {
 		commentsDB[validPostId] = []Comment{
 			commentBody,
 		}
+
+		event := Event{
+			Type: EventType(comment_created_event),
+			Body: CommentCreatedEventBody{
+				Id:     commentBody.Id,
+				PostId: commentBody.PostId,
+				Body:   commentBody.Body,
+			},
+		}
+		jsonData, err := json.Marshal(&event)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("error_marshling_event_%s", err.Error())})
+			return
+		}
+		http.Post("http://localhost:"+event_bus_svc_port+"/events", "application/json", bytes.NewBuffer(jsonData))
+
 		ctx.JSON(http.StatusCreated, gin.H{})
 	})
 
