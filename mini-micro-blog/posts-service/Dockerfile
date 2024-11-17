@@ -19,17 +19,14 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o app .
 # Stage 2: Create a minimal runtime container
 FROM alpine:latest
 
-# Set up a non-root user (optional for security)
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-
 # Set the working directory in the runtime container
 WORKDIR /app
 
 # Copy the compiled binary from the builder stage
 COPY --from=builder /app/app .
 
-# Set permissions (if using non-root user)
-USER appuser
+ENV EVENT_BUS_SVC_PORT ""
+ENV PORT ""
 
 # Expose the application's port
 EXPOSE 9000
