@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-svc
+  # This annotation part is useful, because the ingress-controller pod will search the objects inside our cluster, for an object that has this annotation because this is the object the has the routing rultes for our ingress controller 
+  annotations:
+    kubernetes.io/nginx.class: nginx
+spec:
+  rules:
+  - host: ticgo.dev
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/posts"
+        backend:
+          service:
+            name: posts-srv
+            port: 
+              number: 9000
