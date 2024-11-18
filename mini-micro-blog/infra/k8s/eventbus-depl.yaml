@@ -16,4 +16,25 @@ spec:
       - name: eventbus
         image: fadygamil/eventbus-svc
         ports:
-        - containerPort: 9003
+        - containerPort: 9002
+        env:
+          - name: PORT
+            value: "9002"
+          - name: POSTS_SVC_PORT
+            value: "9000"
+          - name: COMMENTS_SVC_PORT
+            value: "9001"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: eventbus-srv
+spec:
+  type: ClusterIP
+  selector:
+    app: eventbus
+  ports:
+  - name: eventbus
+    protocol: TCP
+    port: 9002 # to access the service 
+    targetPort: 9002 # to access the pod 

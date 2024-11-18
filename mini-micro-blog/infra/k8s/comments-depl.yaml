@@ -17,3 +17,22 @@ spec:
         image: fadygamil/comments-svc
         ports:
         - containerPort: 9001
+        env:
+          - name: PORT
+            value: "9001"
+          - name: EVENT_BUS_SVC_PORT
+            value: "9002"
+---
+apiVersion: v1
+kind: Service
+metadata: 
+  name: comments-srv
+spec: 
+  type: ClusterIP
+  selector:
+    app: comments 
+  ports:
+    - name: comments 
+      protocol: TCP
+      port: 9001
+      targetPort: 9001

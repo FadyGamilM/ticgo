@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -114,9 +115,17 @@ func main() {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("error_marshling_event_%s", err.Error())})
 			return
 		}
-		http.Post("http://localhost:"+event_bus_svc_port+"/events", "application/json", bytes.NewBuffer(jsonData))
+		http.Post("http://eventbus-srv:"+event_bus_svc_port+"/events", "application/json", bytes.NewBuffer(jsonData))
 
 		ctx.JSON(http.StatusCreated, gin.H{})
+	})
+
+	r.POST("/events", func(ctx *gin.Context) {
+		eventBody := &Event{}
+		_ = ctx.Bind(eventBody)
+		log.Println(eventBody)
+		log.Println("consumed_event_", eventBody.Type, "_body_", eventBody.Body)
+		ctx.JSON(http.StatusAccepted, gin.H{})
 	})
 
 	r.Run("0.0.0.0:" + os.Getenv("PORT"))

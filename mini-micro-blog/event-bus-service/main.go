@@ -38,10 +38,11 @@ func main() {
 	var posts_svc_port = os.Getenv("POSTS_SVC_PORT")
 	var comments_svc_port = os.Getenv("COMMENTS_SVC_PORT")
 
-	r.POST("/event/", func(ctx *gin.Context) {
+	r.POST("/events", func(ctx *gin.Context) {
 		event := Event{}
 		err := ctx.BindJSON(&event)
 		if err != nil {
+			log.Println("failed to bind")
 			ctx.JSON(http.StatusBadRequest, gin.H{
 				"error": "failed_to_bind_event_body_" + err.Error(),
 			})
@@ -51,67 +52,57 @@ func main() {
 		switch event.Type {
 		case EventType(post_created_event):
 			log.Println("post_has_been_created")
-			jsonData, err := json.Marshal(event.Body.(PostCreatedEventBody))
+			// Convert the map to our struct
+			bodyMap := event.Body.(map[string]interface{})
+			postEvent := Event{
+				Type: event.Type,
+				Body: PostCreatedEventBody{
+					Id:   int(bodyMap["id"].(int)),
+					Body: bodyMap["body"].(string),
+				},
+			}
+
+			jsonData, err := json.Marshal(postEvent)
 			if err != nil {
-				log.Println("failed_to_marshal_event_body")
+				log.Println("failed_to_marshal_event_body:", err)
 				ctx.JSON(http.StatusInternalServerError, gin.H{
 					"error": err.Error(),
 				})
 				return
 			}
 
-			res, err := http.Post(fmt.Sprintf("http://localhost:%s/events", posts_svc_port), "application/json", bytes.NewBuffer(jsonData))
-			if err != nil {
-				ctx.JSON(http.StatusInternalServerError, gin.H{
-					"error": err.Error(),
-				})
-				return
-			}
-			defer res.Body.Close()
+			http.Post(fmt.Sprintf("http://posts-svc:%s/events", posts_svc_port), "application/json", bytes.NewBuffer(jsonData))
 
-			if res.StatusCode != http.StatusAccepted {
-				log.Println("failure_in_receiving request")
-				ctx.JSON(res.StatusCode, gin.H{
-					"error": "request_not_accepted_by_posts_service",
-				})
-				return
-			}
+			http.Post(fmt.Sprintf("http://comments-svc:%s/events", comments_svc_port), "application/json", bytes.NewBuffer(jsonData))
 
 		case EventType(comment_created_event):
-			log.Println("comment_has_been_created")
-			jsonData, err := json.Marshal(event.Body.(CommentCreatedEventBody))
+			fmt.Println("comment_has_been_created")
+			// Convert the map to our struct
+			bodyMap := event.Body.(map[string]interface{})
+			commentEvent := Event{
+				Type: event.Type,
+				Body: CommentCreatedEventBody{
+					Id:     int(bodyMap["id"].(int)),
+					Body:   bodyMap["body"].(string),
+					PostId: bodyMap["post_id"].(int),
+				},
+			}
+
+			jsonData, err := json.Marshal(commentEvent)
 			if err != nil {
-				log.Println("failed_to_marshal_event_body")
+				log.Println("failed_to_marshal_event_body:", err)
 				ctx.JSON(http.StatusInternalServerError, gin.H{
 					"error": err.Error(),
 				})
 				return
 			}
+			http.Post(fmt.Sprintf("http://posts-svc:%s/events", posts_svc_port), "application/json", bytes.NewBuffer(jsonData))
 
-			res, err := http.Post(fmt.Sprintf("http://localhost:%s/events", comments_svc_port), "application/json", bytes.NewBuffer(jsonData))
-			if err != nil {
-				ctx.JSON(http.StatusInternalServerError, gin.H{
-					"error": err.Error(),
-				})
-				return
-			}
-			defer res.Body.Close()
-
-			if res.StatusCode != http.StatusAccepted {
-				log.Println("failure_in_receiving request")
-				ctx.JSON(res.StatusCode, gin.H{
-					"error": "request_not_accepted_by_comments_service",
-				})
-				return
-			}
+			http.Post(fmt.Sprintf("http://comments-svc:%s/events", comments_svc_port), "application/json", bytes.NewBuffer(jsonData))
 		}
 
-		// we decode the event, and we send it to all subscribed consumers (currently all svcs) and the svc who is interested in should consume it and process it
 	})
 
-	// if err := r.Run("0.0.0.0:", os.Getenv("PORT")); err != nil {
-	// 	log.Println("error_starting_event_bus_server_", err.Error())
-	// }
 	r.Run("0.0.0.0:" + os.Getenv("PORT"))
 
 }

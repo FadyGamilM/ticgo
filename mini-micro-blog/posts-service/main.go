@@ -53,7 +53,7 @@ func main() {
 
 		err := ctx.BindJSON(postBOdy)
 		if err != nil {
-			log.Println("error_binding_request_body")
+			fmt.Println("error_binding_request_body")
 			ctx.JSON(http.StatusBadRequest, gin.H{
 				"error": err.Error(),
 			})
@@ -79,14 +79,22 @@ func main() {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("error_marshling_event_%s", err.Error())})
 			return
 		}
-		http.Post("http://localhost:"+event_bus_svc_port+"/events", "application/json", bytes.NewBuffer(jsonData))
+		http.Post("http://eventbus-srv:"+event_bus_svc_port+"/events", "application/json", bytes.NewBuffer(jsonData))
 
 		ctx.JSON(http.StatusCreated, gin.H{
 			"postId": posts[len(posts)-1].Id,
 		})
 	})
 
-	log.Println("server_listening_on_port", os.Getenv("PORT"))
+	r.POST("/events", func(ctx *gin.Context) {
+		eventBody := &Event{}
+		_ = ctx.Bind(eventBody)
+		log.Println(eventBody)
+		fmt.Println("consumed_event_", eventBody.Type, "_body_", eventBody.Body)
+		ctx.JSON(http.StatusAccepted, gin.H{})
+	})
+
+	fmt.Println("server_listening_on_port", os.Getenv("PORT"))
 	err := r.Run("0.0.0.0:" + os.Getenv("PORT"))
 	if err != nil {
 		log.Panicln("error_Starting_posts_Server_", err)
