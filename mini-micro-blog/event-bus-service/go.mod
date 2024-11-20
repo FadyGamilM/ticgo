@@ -1,4 +1,4 @@
-module event-bus-service
+module posts-service
 
 go 1.21.7
 

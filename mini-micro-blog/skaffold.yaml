@@ -1,0 +1,39 @@
+apiVersion: skaffold/v2alpha3
+kind: Config
+
+deploy:
+  kubectl:
+    manifests:
+      - ./infra/k8s/*.yaml
+    flags:
+      global:
+        - "--context=minikube"
+build:
+  local:
+    push: false 
+  artifacts:
+    - image: fadygamil/posts-service
+      context: ./posts-service
+      docker:
+        dockerfile: Dockerfile      # Changed from ./posts-service/Dockerfile
+      sync:
+        manual:
+        # ! The meaning of this is : if the changes we made is into one of the files that are specified in the src path, just copy this file into the pod without re-building the image, otherwise, build the image 
+          - src: '*.go'         # Changed from './posts-service/**/*.go'
+            dest: .
+    - image: fadygamil/comments-service
+      context: ./comments-service
+      docker:
+        dockerfile: Dockerfile      # Changed from ./comments-service/Dockerfile
+      sync:
+        manual:
+          - src: '**/*.go'         # Changed from './comments-service/**/*.go'
+            dest: .
+    - image: fadygamil/eventbus-service
+      context: ./event-bus-service
+      docker:
+        dockerfile: Dockerfile      # Changed from ./event-bus-service/Dockerfile
+      sync:
+        manual:
+          - src: '**/*.go'         # Changed from './event-bus-service/**/*.go'
+            dest: .

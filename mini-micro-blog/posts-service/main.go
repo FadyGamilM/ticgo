@@ -53,7 +53,7 @@ func main() {
 
 		err := ctx.BindJSON(postBOdy)
 		if err != nil {
-			fmt.Println("error_binding_request_body")
+			log.Println("error_binding_request_body")
 			ctx.JSON(http.StatusBadRequest, gin.H{
 				"error": err.Error(),
 			})
@@ -90,11 +90,11 @@ func main() {
 		eventBody := &Event{}
 		_ = ctx.Bind(eventBody)
 		log.Println(eventBody)
-		fmt.Println("consumed_event_", eventBody.Type, "_body_", eventBody.Body)
+		log.Println("consumed_event_", eventBody.Type, "_body_", eventBody.Body)
 		ctx.JSON(http.StatusAccepted, gin.H{})
 	})
 
-	fmt.Println("server_listening_on_port", os.Getenv("PORT"))
+	log.Println("server_listening_on_port", os.Getenv("PORT"))
 	err := r.Run("0.0.0.0:" + os.Getenv("PORT"))
 	if err != nil {
 		log.Panicln("error_Starting_posts_Server_", err)

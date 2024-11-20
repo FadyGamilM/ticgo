@@ -1,4 +1,4 @@
-module comments-service
+module posts-service
 
 go 1.21.7
 
