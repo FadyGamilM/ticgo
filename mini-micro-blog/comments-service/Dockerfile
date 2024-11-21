@@ -4,7 +4,6 @@ FROM golang:1.21 as builder
 # Set the working directory inside the container
 WORKDIR /app
 
-# Install an older compatible version of air
 RUN go install github.com/cosmtrek/air@v1.40.4
 
 # Copy the Go modules manifests
@@ -16,22 +15,23 @@ RUN go mod download
 # Copy the source code
 COPY . .
 
+# # Create a minimal runtime container
 FROM golang:1.21
 
-# Set the working directory in the runtime container
 WORKDIR /app
 
-# Copy air executable from builder
+# # Copy air executable from builder
 COPY --from=builder /go/bin/air /go/bin/air
 
-# Copy the source code and dependencies
+# # Copy the source code and dependencies
 COPY --from=builder /app ./
 
 ENV EVENT_BUS_SVC_PORT ""
 ENV PORT ""
 
-# Expose the application's port
-EXPOSE 9001
+# # Expose the application's port
+EXPOSE 9000
 
-# Use air instead of directly running the binary
-CMD ["air", "-c", ".air.toml"]
+# # Use air instead of directly running the binary
+# # CMD ["air", "-c", ".air.toml"]
+CMD ["air"]

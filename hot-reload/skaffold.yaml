@@ -1,0 +1,17 @@
+apiVersion: skaffold/v4beta11
+kind: Config
+metadata:
+  name: hot-reload
+build:
+  artifacts:
+    - image: fadygamil/posts-svc
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: '**/*.go'
+            dest: .
+manifests:
+  rawYaml:
+    - app-depl.yaml
+

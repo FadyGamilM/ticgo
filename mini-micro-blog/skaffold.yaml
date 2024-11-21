@@ -1,39 +1,38 @@
-apiVersion: skaffold/v2alpha3
+apiVersion: skaffold/v4beta11
 kind: Config
-
-deploy:
-  kubectl:
-    manifests:
-      - ./infra/k8s/*.yaml
-    flags:
-      global:
-        - "--context=minikube"
+metadata:
+  name: mini-micro-blog
 build:
-  local:
-    push: false 
   artifacts:
-    - image: fadygamil/posts-service
-      context: ./posts-service
+    - image: fadygamil/posts-svc
+      context: posts-service
       docker:
-        dockerfile: Dockerfile      # Changed from ./posts-service/Dockerfile
+        dockerfile: Dockerfile
       sync:
         manual:
-        # ! The meaning of this is : if the changes we made is into one of the files that are specified in the src path, just copy this file into the pod without re-building the image, otherwise, build the image 
-          - src: '*.go'         # Changed from './posts-service/**/*.go'
+          - src: '**/*.go'
             dest: .
-    - image: fadygamil/comments-service
-      context: ./comments-service
+    - image: fadygamil/comments-svc
+      context: comments-service
       docker:
-        dockerfile: Dockerfile      # Changed from ./comments-service/Dockerfile
+        dockerfile: Dockerfile
       sync:
         manual:
-          - src: '**/*.go'         # Changed from './comments-service/**/*.go'
+          - src: '**/*.go'
             dest: .
-    - image: fadygamil/eventbus-service
-      context: ./event-bus-service
+
+    - image: fadygamil/eventbus-svc
+      context: event-bus-service
       docker:
-        dockerfile: Dockerfile      # Changed from ./event-bus-service/Dockerfile
+        dockerfile: Dockerfile
       sync:
         manual:
-          - src: '**/*.go'         # Changed from './event-bus-service/**/*.go'
+          - src: '**/*.go'
             dest: .
+
+manifests:
+  rawYaml:
+    - infra/k8s/comments-depl.yaml
+    - infra/k8s/eventbus-depl.yaml
+    # - infra/k8s/ingress-svc.yaml
+    - infra/k8s/posts-depl.yaml

@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: posts-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: posts
+  template:
+    metadata:
+      labels:
+        app: posts
+    spec:
+      containers:
+      - name: posts
+        image: fadygamil/posts-svc:latest
+        ports:
+        - containerPort: 9000
+        env:
+          - name: PORT
+            value: "9000"
+          - name: EVENT_BUS_SVC_PORT
+            value: "9002"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: posts-srv
+spec:
+  type: ClusterIP
+  selector:
+    app: posts
+  ports:
+  - name: posts
+    protocol: TCP
+    port: 9000
+    targetPort: 9000 
