@@ -1,6 +1,7 @@
 package main
 
 import (
+	"auth-service/routes"
 	"context"
 	"log"
 	"net/http"
@@ -8,7 +9,6 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
-	"ticgo/auth-service/routes"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -51,6 +51,7 @@ func httpServer(ctx context.Context, wg *sync.WaitGroup) {
 
 	// run the server into go routine
 	go func() {
+		log.Println("server_is_up_and_running")
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalln("error_starting_http_auth_Server : ", err)
 		}

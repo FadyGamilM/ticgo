@@ -1,0 +1,18 @@
+apiVersion: skaffold/v4beta11
+kind: Config
+metadata:
+  name: ticgo
+build:
+  artifacts:
+    - image: fadygamil/auth-svc
+      context: auth-service
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - dest: .
+            src: '**/*.go'
+
+manifests:
+  rawYaml:
+    - infra/auth.depl.yaml
