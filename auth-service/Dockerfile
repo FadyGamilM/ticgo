@@ -1,30 +1,36 @@
-FROM golang:1.21-alpine
+# Stage 1: Build the binary
+FROM golang:1.21 as builder
 
-# Set the GOPATH
-ENV GOPATH /go
+# Set the working directory inside the container
+WORKDIR /app
 
-# Set the working directory to match your module path
-WORKDIR /go/src/ticgo
+RUN go install github.com/cosmtrek/air@v1.40.4
 
-# Copy go.mod and go.sum
+# Copy the Go modules manifests
 COPY go.mod go.sum ./
 
-# Download dependencies
+# Download and cache dependencies
 RUN go mod download
 
-# Copy only the auth-service source code
-COPY auth-service ./auth-service
+# Copy the source code
+COPY . .
 
-# Set working directory to auth-service inside the container  
-WORKDIR /go/src/ticgo/auth-service
+# # Create a minimal runtime container
+FROM golang:1.21-alpine
 
-# Build the application
-RUN go build -o auth main.go
+WORKDIR /app
 
-RUN apk add --no-cache curl
+# # Copy air executable from builder
+COPY --from=builder /go/bin/air /go/bin/air
 
-ENV PORT=8080
+# # Copy the source code and dependencies
+COPY --from=builder /app ./
 
-EXPOSE $PORT
+ENV PORT ""
 
-CMD ["./auth"]
+# # Expose the application's port
+EXPOSE 9000
+
+# # Use air instead of directly running the binary
+# # CMD ["air", "-c", ".air.toml"]
+CMD ["air"]
