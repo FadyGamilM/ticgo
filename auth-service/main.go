@@ -45,6 +45,10 @@ func httpServer(ctx context.Context, wg *sync.WaitGroup) {
 	healthRoutesGroup := engine.Group("/auth")
 	healthRouter.InstallRouteHandlers(healthRoutesGroup)
 
+	authRouter := &routes.AuthRouter{}
+	authRoutesGroup := engine.Group("/api/auth")
+	authRouter.InstallRouteHandlers(authRoutesGroup)
+
 	// define http server instance
 	port := os.Getenv("PORT")
 	srv := &http.Server{Addr: "0.0.0.0:" + port, Handler: engine}

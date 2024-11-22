@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-svc
+  # This annotation part is useful, because the ingress-controller pod will search the objects inside our cluster, for an object that has this annotation because this is the object the has the routing rultes for our ingress controller 
+  annotations:
+    kubernetes.io/nginx.class: nginx
+    # for wild cards and prefixs 
+    nginx.ingress.kubernetes.io/use-regex: 'true'
+spec:
+  rules:
+  - host: ticgo.dev
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/api/auth"
+        backend:
+          service:
+            name: auth-srv # the name of the ClusterIP service
+            port: 
+              number: 3000

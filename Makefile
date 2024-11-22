@@ -5,4 +5,4 @@ run-auth-container:
 	docker run -it -p 3030:8080 --name auth-service auth-service
 
 enable-ingress-nginx-inside-minikube-cluster:
-	minikube addons enable ingress
+	minikube addons enable ingress 

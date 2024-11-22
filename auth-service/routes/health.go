@@ -14,6 +14,5 @@ func (hr *HealthRouter) InstallRouteHandlers(r *gin.RouterGroup) {
 		ctx.JSON(http.StatusOK, gin.H{
 			"status": "pong",
 		})
-		return
 	})
 }
